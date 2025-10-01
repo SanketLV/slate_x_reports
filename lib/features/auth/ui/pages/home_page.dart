@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:slate_x_reports/core/constants/drawer_items.dart';
 import 'package:slate_x_reports/core/widgets/loading_screen.dart';
 import 'package:slate_x_reports/features/auth/state/auth_provider.dart';
 import 'package:slate_x_reports/features/auth/ui/pages/login_page.dart';
+import 'package:slate_x_reports/features/cash_drawer/ui/pages/cash_drawer_page.dart';
+import 'package:slate_x_reports/features/category_sales/ui/pages/category_sales_page.dart';
+import 'package:slate_x_reports/features/daily_sales/ui/pages/daily_sales_page.dart';
+import 'package:slate_x_reports/features/hourly_sales/ui/pages/hourly_sales_page.dart';
 import 'package:slate_x_reports/features/invoice/ui/pages/invoice_page.dart';
+import 'package:slate_x_reports/features/item_sales/ui/pages/item_sales_page.dart';
+import 'package:slate_x_reports/features/tax/ui/pages/tax_page.dart';
 import 'package:slate_x_reports/features/user_profile/ui/pages/user_profile_page.dart';
-
-enum Tab { invoice }
 
 enum ProfileMenuAction { profile, logout }
 
@@ -20,14 +25,22 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
-  Tab _selectedTab = Tab.invoice;
+  AppTab _selectedTab = AppTab.invoice;
   bool _showProfile = false;
 
-  bool _isTabSelected(Tab t) => !_showProfile && _selectedTab == t;
+  bool _isTabSelected(AppTab tab) => !_showProfile && _selectedTab == tab;
 
-  static const List<Widget> _widgetOptions = <Widget>[InvoicePage()];
+  static const Map<AppTab, Widget> _pages = {
+    AppTab.invoice: InvoicePage(),
+    AppTab.dailySales: DailySalesPage(),
+    AppTab.itemSales: ItemSalesPage(),
+    AppTab.categorySales: CategorySalesPage(),
+    AppTab.hourlySales: HourlySalesPage(),
+    AppTab.tax: TaxPage(),
+    AppTab.cashDrawer: CashDrawerPage(),
+  };
 
-  void _onTabTapped(Tab tab) {
+  void _onTabTapped(AppTab tab) {
     setState(() {
       _showProfile = false;
       _selectedTab = tab;
@@ -54,8 +67,15 @@ class _HomePageState extends ConsumerState<HomePage> {
     }
 
     return Scaffold(
+      onDrawerChanged: (isOpened) {
+        if (isOpened) {
+          FocusManager.instance.primaryFocus?.unfocus();
+        } else {
+          FocusManager.instance.primaryFocus?.unfocus();
+        }
+      },
       appBar: AppBar(
-        elevation: 8,
+        elevation: 4,
         actions: [
           PopupMenuButton<ProfileMenuAction>(
             tooltip: "Account info",
@@ -126,7 +146,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                     ),
                     SizedBox(height: 2),
                     Text(
-                      "${currentUser?.emailAddress ?? ""}",
+                      currentUser?.emailAddress ?? "",
                       style: TextStyle(color: Colors.black54, fontSize: 12),
                     ),
                   ],
@@ -162,7 +182,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         ],
       ),
       drawer: Drawer(
-        backgroundColor: Colors.black,
+        backgroundColor: Color.fromRGBO(42, 45, 52, 1),
         child: Column(
           children: [
             //* Logo section
@@ -186,39 +206,44 @@ class _HomePageState extends ConsumerState<HomePage> {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    //* Invoice tile
-                    Container(
-                      margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: _isTabSelected(Tab.invoice)
-                            ? Colors.white
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: ListTile(
-                        leading: Icon(
-                          LucideIcons.paperclip,
-                          color: _isTabSelected(Tab.invoice)
-                              ? Colors.black
-                              : Colors.white,
+                    for (final item in drawerItems)
+                      //* Drawer tiles
+                      Container(
+                        margin: EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
                         ),
-                        title: Text(
-                          "Invoice",
-                          style: TextStyle(
-                            color: _isTabSelected(Tab.invoice)
+                        decoration: BoxDecoration(
+                          color: _isTabSelected(item.tab)
+                              ? Colors.white
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: ListTile(
+                          leading: Icon(
+                            item.icon,
+                            color: _isTabSelected(item.tab)
                                 ? Colors.black
                                 : Colors.white,
-                            fontWeight: _isTabSelected(Tab.invoice)
-                                ? FontWeight.normal
-                                : FontWeight.bold,
                           ),
+                          title: Text(
+                            item.title,
+                            style: GoogleFonts.dmSans(
+                              color: _isTabSelected(item.tab)
+                                  ? Colors.black
+                                  : Colors.white,
+                              fontWeight: _isTabSelected(item.tab)
+                                  ? FontWeight.normal
+                                  : FontWeight.bold,
+                            ),
+                          ),
+
+                          onTap: () {
+                            _onTabTapped(item.tab);
+                            Navigator.pop(context);
+                          },
                         ),
-                        onTap: () {
-                          _onTabTapped(Tab.invoice);
-                          Navigator.pop(context);
-                        },
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -228,7 +253,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       ),
       body: _showProfile
           ? UserProfilePage()
-          : Center(child: _widgetOptions.elementAt(_selectedTab.index)),
+          : Center(child: _pages[_selectedTab]!),
     );
   }
 }

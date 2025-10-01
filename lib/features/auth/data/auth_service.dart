@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:slate_x_reports/core/models/api_response.dart';
-import 'package:slate_x_reports/core/network/api_service.dart';
+import 'package:slate_x_reports/core/models/api_auth_response.dart';
+import 'package:slate_x_reports/core/network/api_auth_service.dart';
 import 'package:slate_x_reports/features/auth/models/restaurant_details.dart';
 import 'package:slate_x_reports/features/auth/models/user.dart';
 
@@ -14,7 +14,7 @@ class AuthService {
     log("Headers: ${{"Content-Type": "application/json"}}");
     log("Body: ${jsonEncode({"email": email, "password": password})}");
 
-    final response = await ApiService.post<User>(
+    final response = await ApiAuthService.post<User>(
       "/employee/login",
       body: {"email_address": email, "password": password},
       fromJson: (json) => User.fromJson(json),
@@ -58,7 +58,7 @@ class AuthService {
     try {
       log("AuthService - Fetching restaurant details with token");
 
-      final response = await ApiService.post<RestaurantDetails>(
+      final response = await ApiAuthService.post<RestaurantDetails>(
         "/getRestaurantDetails",
         body: {},
         headers: {'Authorization': 'Bearer $token'},
