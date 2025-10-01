@@ -18,7 +18,7 @@ class MyApp extends ConsumerWidget {
 
       theme: ThemeData(
         brightness: Brightness.light,
-        scaffoldBackgroundColor: Colors.grey[200],
+        scaffoldBackgroundColor: Colors.white60,
         primaryColor: Colors.black,
 
         appBarTheme: AppBarTheme(
@@ -30,6 +30,13 @@ class MyApp extends ConsumerWidget {
         textTheme: const TextTheme(
           bodyLarge: TextStyle(color: Colors.black),
           bodyMedium: TextStyle(color: Colors.black),
+        ),
+
+        //* Text Selection theme
+        textSelectionTheme: TextSelectionThemeData(
+          cursorColor: Colors.black,
+          selectionHandleColor: Colors.black,
+          selectionColor: Colors.black26,
         ),
       ),
 
